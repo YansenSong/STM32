@@ -75,8 +75,8 @@ Bootloader 检查向量、镜像范围和 CRC32 后启动 B 一次。B 在运行
 
 ## 代码入口与配置
 
-- `Application/User/src/main.c`：初始化、通信轮询及 20ms 控制周期。
-- `Application/User/inc/vehicle_config.h`：引脚、CAN、UDP、遥控及协议参数。
+- `Application/Core/src/main.c`：初始化、通信轮询及 20ms 控制周期。
+- `Application/Vehicle/vehicle_config.h`：引脚、CAN、UDP、遥控及协议参数。
 - `bsp_can.c` / `vehicle_feedback.c`：CAN 收发与反馈解析。
 - `bsp_uart.c` / `upper_cmd.c`：串口接收和 26 字节指令解析。
 - `bsp_eth.c`：轻量 ARP / IPv4 / UDP 通信。

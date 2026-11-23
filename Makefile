@@ -9,10 +9,11 @@ FREERTOS = Libraries/FreeRTOS-Kernel
 RTOS_PORT = $(FREERTOS)/portable/GCC/ARM_CM4F
 TARGET = build/vehicle
 CPU = -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard
-CPPFLAGS = -DSTM32F407xx -DUSE_HAL_DRIVER $(addprefix -I,Application/Core/inc Application/User/inc $(HAL)/Inc $(CMSIS)/Include $(CMSIS)/Device/ST/STM32F4xx/Include $(FREERTOS)/include $(RTOS_PORT) firmware/ota)
+APP_MODULES = Application/Board Application/Commands Application/Health Application/Ota Application/Vehicle
+CPPFLAGS = -DSTM32F407xx -DUSE_HAL_DRIVER $(addprefix -I,Application/Core/inc $(APP_MODULES) $(HAL)/Inc $(CMSIS)/Include $(CMSIS)/Device/ST/STM32F4xx/Include $(FREERTOS)/include $(RTOS_PORT) firmware/ota)
 CFLAGS = $(CPU) -std=gnu11 -Os -g3 -Wall -Wextra -ffunction-sections -fdata-sections -MMD -MP
 HAL_MODULES = hal hal_can hal_cortex hal_dma hal_dma_ex hal_eth hal_flash hal_flash_ex hal_gpio hal_pwr hal_pwr_ex hal_rcc hal_rcc_ex hal_uart
-SOURCES = $(wildcard Application/Core/src/*.c Application/User/src/*.c) $(CMSIS)/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c $(addprefix $(HAL)/Src/stm32f4xx_,$(addsuffix .c,$(HAL_MODULES)))
+SOURCES = $(wildcard Application/Core/src/*.c $(addsuffix /*.c,$(APP_MODULES))) $(CMSIS)/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c $(addprefix $(HAL)/Src/stm32f4xx_,$(addsuffix .c,$(HAL_MODULES)))
 SOURCES += $(FREERTOS)/tasks.c $(FREERTOS)/list.c $(FREERTOS)/queue.c $(RTOS_PORT)/port.c
 OBJECTS = $(addprefix build/,$(SOURCES:.c=.o)) build/firmware/startup_stm32f407xx.o
 .PHONY: all clean flash
