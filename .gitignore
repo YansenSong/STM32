@@ -1,0 +1,35 @@
+# Makefile build output (firmware, OTA images, maps and dependencies)
+/build/
+
+# Compiler output generated outside the build directory
+*.o
+*.obj
+*.d
+*.elf
+*.axf
+*.map
+*.lst
+*.su
+
+# Python tool caches and local virtual environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Local editor and operating system files
+.idea/
+.vscode/*.log
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local OTA signing keys (keep public keys trackable)
+*.key
+private.pem
+*-private.pem
+*_private.pem
