@@ -1,0 +1,43 @@
+See README_STA56 and STA56 interface document for current feedback.
+
+普通车运控以太网控制说明 V1.0
+
+1. 通信方式
+- STM32 运控板作为 UDP 接收端。
+- 默认静态 IP：192.168.5.50
+- 默认 UDP 端口：5000
+- 上位机/路径规划程序把原来的 26 字节 cmd__ 报文直接作为 UDP payload 发送即可。
+- UDP payload 可以正好 26 字节，也可以包含填充，STM32 会扫描其中的 cmd__ 帧。
+
+2. 优先级
+- USART1：保留原 RK3588/PC 串口 26 字节控制。
+- Ethernet：新增 UDP 26 字节控制，解析后同样写入 g_vehicle_cmd。
+- Remote：遥控器仍然最高优先级。只要遥控器有效，20ms CAN 下发前会覆盖 USART1/Ethernet 上位机指令。
+
+3. PC 网络配置建议
+- PC 网卡手动设置：192.168.5.11 / 255.255.255.0
+- STM32 目标：192.168.5.50:5000
+
+4. 需要加入 Keil 工程的新增文件
+- Application/User/inc/bsp_eth.h
+- Application/User/src/bsp_eth.c
+只复制文件不够，bsp_eth.c 还必须 Add Existing Files to Group，参与编译。
+
+5. 关键调试变量
+- dbg_eth_init_step：以太网初始化步骤
+- dbg_eth_init_ret：0 表示初始化成功
+- dbg_eth_ready：1 表示以太网已启动
+- dbg_eth_rx_frame_cnt：收到以太网帧数量
+- dbg_eth_arp_req_cnt / dbg_eth_arp_reply_cnt：ARP 请求与回复次数
+- dbg_eth_rx_udp_cnt：收到目标 UDP 数据包数量
+- dbg_eth_rx_cmd_cnt：检测到 26 字节命令数量
+- dbg_eth_cmd_ok_cnt：通过校验并写入车辆控制命令数量
+- dbg_eth_cmd_checksum_err_cnt：校验失败次数
+- dbg_eth_last_cmd[26]：最近一次收到的命令
+
+6. 测试顺序
+- 板子上电，网线连接 PC。
+- PC 设置静态 IP：192.168.5.11。
+- Keil 下载程序后查看 dbg_eth_ready 是否为 1。
+- PC 先 ping 192.168.5.50，如果 ARP 正常，dbg_eth_arp_req_cnt/dbg_eth_arp_reply_cnt 会增加。
+- 用 udp_send_cmd_test.py 发 26 字节命令，看 dbg_eth_cmd_ok_cnt 是否增加，再看 CAN 分析仪。

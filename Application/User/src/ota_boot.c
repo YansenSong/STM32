@@ -1,0 +1,34 @@
+#include "ota_boot.h"
+#include "layout.h"
+#include "flash_word.h"
+
+volatile uint32_t dbg_ota_image_version;
+volatile uint32_t dbg_ota_confirmed;
+
+void OtaBoot_Service(uint32_t now, uint8_t ready)
+{
+    volatile OtaManifest *manifest;
+    if (SCB->VTOR == OTA_SLOT_A)
+        manifest = (volatile OtaManifest *)OTA_META_A;
+    else if (SCB->VTOR == OTA_SLOT_B)
+        manifest = (volatile OtaManifest *)OTA_META_B;
+    else
+        return;
+
+    if (manifest->magic != OTA_MAGIC || manifest->base != SCB->VTOR) return;
+    dbg_ota_image_version = manifest->version;
+    if (manifest->confirmed == 0u)
+    {
+        dbg_ota_confirmed = 1u;
+        IWDG->KR = 0xAAAAu;
+    }
+    else if (manifest->attempted == 0u && now >= 5000u && ready)
+    {
+        /* Confirm only after this task has completed control cycles with Ethernet up. */
+        if (ota_mark(&manifest->confirmed))
+        {
+            dbg_ota_confirmed = 1u;
+            IWDG->KR = 0xAAAAu;
+        }
+    }
+}
