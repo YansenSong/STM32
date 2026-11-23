@@ -6,6 +6,7 @@
 #include <string.h>
 
 #define HEALTH_STACK_WORDS 256u
+#define HEALTH_PRIORITY    1u
 #define HEALTH_REPORT_LEN 44u
 #define HEALTH_UDP_PORT 5002u
 
@@ -66,7 +67,7 @@ static void HealthTask(void *argument)
     }
 }
 
-void Health_Init(void)
+void Health_CreateTask(void)
 {
     s_snapshots = xQueueCreateStatic(1u, sizeof(HealthSnapshot), s_snapshot_storage,
                                     &s_snapshot_queue);
@@ -74,7 +75,7 @@ void Health_Init(void)
                                   &s_report_queue);
     configASSERT(s_snapshots != NULL && s_reports != NULL);
     TaskHandle_t task = xTaskCreateStatic(HealthTask, "Health", HEALTH_STACK_WORDS,
-                                          NULL, 1u, s_stack, &s_task);
+                                          NULL, HEALTH_PRIORITY, s_stack, &s_task);
     configASSERT(task != NULL);
 }
 

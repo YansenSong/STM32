@@ -22,7 +22,10 @@ volatile uint32_t dbg_ota_arm_request;
 volatile uint32_t dbg_ota_maintenance;
 volatile uint32_t dbg_ota_received_bytes;
 static StaticTask_t s_task;
-static StackType_t s_stack[512];
+#define UPDATE_STACK_WORDS 512u
+#define UPDATE_PRIORITY    1u
+
+static StackType_t s_stack[UPDATE_STACK_WORDS];
 static StaticQueue_t s_rx_cb, s_tx_cb;
 static uint8_t s_rx_storage[sizeof(UpdatePacket)], s_tx_storage[12];
 static QueueHandle_t s_rx, s_tx;
@@ -193,12 +196,14 @@ static void UpdateTask(void *argument)
     }
 }
 
-void OtaUpdate_Init(void)
+void OtaUpdate_CreateTask(void)
 {
     s_rx = xQueueCreateStatic(1u, sizeof(UpdatePacket), s_rx_storage, &s_rx_cb);
     s_tx = xQueueCreateStatic(1u, 12u, s_tx_storage, &s_tx_cb);
     configASSERT(s_rx && s_tx);
-    configASSERT(xTaskCreateStatic(UpdateTask, "Update", 512u, NULL, 1u, s_stack, &s_task));
+    TaskHandle_t task = xTaskCreateStatic(UpdateTask, "Update", UPDATE_STACK_WORDS,
+                                          NULL, UPDATE_PRIORITY, s_stack, &s_task);
+    configASSERT(task != NULL);
 }
 
 void OtaUpdate_Receive(const uint8_t *data, uint16_t length)

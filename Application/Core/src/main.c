@@ -18,9 +18,13 @@
 #endif
 
 static void SystemClock_Config(void);
+#define VEHICLE_STACK_WORDS 768u
+#define VEHICLE_PRIORITY    2u
+
+static void Vehicle_CreateTask(void);
 static void VehicleTask(void *argument);
 static StaticTask_t s_vehicle_task;
-static StackType_t s_vehicle_stack[768];
+static StackType_t s_vehicle_stack[VEHICLE_STACK_WORDS];
 volatile uint8_t g_freertos_tick_enabled;
 volatile uint32_t dbg_freertos_assert_line;
 volatile uint32_t dbg_freertos_stack_overflow;
@@ -29,8 +33,6 @@ volatile UBaseType_t dbg_vehicle_stack_free_words;
 volatile uint32_t dbg_main_loop_cnt = 0u;
 volatile uint32_t dbg_last_20ms_tick = 0u;
 volatile uint32_t dbg_boot_step = 0;
-
-
 
 volatile uint32_t dbg_control_max_late_us;
 volatile uint32_t dbg_control_max_run_us;
@@ -50,11 +52,11 @@ int main(void)
     dbg_boot_step = 31;
     BSP_UART5_Init(VEH_REMOTE_UART5_BAUDRATE);
 
-		dbg_boot_step = 4;
-		dbg_can1_init_ret = BSP_CAN1_Init_EPS();
+    dbg_boot_step = 4;
+    dbg_can1_init_ret = BSP_CAN1_Init_EPS();
 
-		dbg_boot_step = 5;
-		dbg_can2_init_ret = BSP_CAN2_Init_DriveBrake();
+    dbg_boot_step = 5;
+    dbg_can2_init_ret = BSP_CAN2_Init_DriveBrake();
 
     dbg_boot_step = 6;
     UpperCmd_Init();
@@ -74,14 +76,20 @@ int main(void)
     TIM2->ARR = UINT32_MAX;
     TIM2->EGR = TIM_EGR_UG;
     TIM2->CR1 = TIM_CR1_CEN;
-    TaskHandle_t task = xTaskCreateStatic(VehicleTask, "Vehicle", 768u, NULL,
-                                          2u, s_vehicle_stack, &s_vehicle_task);
-    configASSERT(task != NULL);
-    Health_Init();
-    OtaUpdate_Init();
+    /* Create all application tasks before starting the scheduler. */
+    Vehicle_CreateTask();
+    Health_CreateTask();
+    OtaUpdate_CreateTask();
     vTaskStartScheduler();
     FreeRTOS_AssertFailed(__LINE__);
     return 1;
+}
+
+static void Vehicle_CreateTask(void)
+{
+    TaskHandle_t task = xTaskCreateStatic(VehicleTask, "Vehicle", VEHICLE_STACK_WORDS, NULL,
+                                          VEHICLE_PRIORITY, s_vehicle_stack, &s_vehicle_task);
+    configASSERT(task != NULL);
 }
 
 static void VehicleTask(void *argument)
@@ -179,12 +187,7 @@ static void SystemClock_Config(void)
     RCC_ClkInitTypeDef RCC_ClkInitStruct;
     RCC_OscInitTypeDef RCC_OscInitStruct;
 
-    /*
-     * 时园妫?
-     * 使獠?HSE使 PLL
-     * 直使诓 HSI 16MHz 为系统时印
-     * 目模懦獠?PLL 驴狻?
-     */
+    /* Use the internal 16 MHz HSI oscillator as the system clock. */
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
     RCC_OscInitStruct.HSIState = RCC_HSI_ON;
     RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;

@@ -103,3 +103,18 @@ Vehicle 统一发送 UDP，链路恢复后发送最新报告。UDP 5001 的状�
 保留完整 HAL/CMSIS 库，业务代码与通信协议未修改，Git 历史保留，未执行提交。
 
 Keil 工程及调试配置另存于上一级 `项目归档/Keil配置-*.tar.gz`，可按需恢复。
+
+## 从这套固件学习 MCU 和 FreeRTOS
+
+1. **跟一次上电启动。** 打开 [main.c](Application/Core/src/main.c)，从 `main()` 顺着读。先初始化 HAL、时钟、串口和 CAN，再设置 TIM2，最后连续调用三个 `CreateTask` 函数。创建任务会登记入口、栈和优先级。调用 `vTaskStartScheduler()` 后，调度器才开始选择就绪任务执行。
+2. **看懂两个时间尺度。** [中断入口](Application/Core/src/stm32f4xx_it.c) 中的 SysTick 推进 HAL 时间，并在启用后推进 FreeRTOS 的 tick。[内核配置](Application/Core/inc/FreeRTOSConfig.h) 把 tick 设为 1 ms。Vehicle 循环末尾的 `vTaskDelay(1u)` 让它阻塞到下一个 tick。20 ms 车辆控制周期由循环内读取的 TIM2 微秒计数决定。
+3. **跟一条跨任务消息。** 在 main.c 搜索 `Health_Publish`，看 Vehicle 怎样每秒采集快照。再打开 [health_task.c](Application/Health/health_task.c)，依次看 `Health_Publish`、`HealthTask` 和 `Health_SendPending`。两个单元素队列分别存最新快照和最新报告。Health 把快照编码成报告，Vehicle 在自己的循环里发出报告。
+4. **看任务怎样等待工作。** 在 [ota_update.c](Application/Ota/ota_update.c) 找到 `UpdateTask`。普通模式下它延时 100 ms 再检查维护状态。进入维护模式后，它阻塞在接收队列上，收到数据才处理，等待超时则复位。对照 Health 的 `xTaskDelayUntil`，可以看到等待消息和按固定周期唤醒的区别。
+
+| 应用任务 | 优先级 | 静态栈（32 位字） | 调试时可观察 |
+|---|---:|---:|---|
+| Vehicle | 2 | 768 | `dbg_main_loop_cnt`、`dbg_control_missed_periods` |
+| Health | 1 | 256 | `dbg_health_report_count`、`dbg_health_stack_free_words` |
+| Update | 1 | 512 | `dbg_ota_received_bytes` |
+
+每个任务的创建函数旁都能找到栈数组或栈大小常量。优先级数值越大，调度器越优先运行该就绪任务。当这三个任务都阻塞时，内核运行 Idle 空闲任务。

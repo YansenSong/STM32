@@ -14,7 +14,7 @@ typedef struct
     uint32_t ethernet_retries;
 } HealthSnapshot;
 
-void Health_Init(void);
+void Health_CreateTask(void);
 void Health_Publish(const HealthSnapshot *snapshot);
 void Health_SendPending(void);
 
