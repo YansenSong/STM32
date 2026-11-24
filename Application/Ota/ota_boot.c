@@ -24,7 +24,7 @@ void OtaBoot_Service(uint32_t now, uint8_t ready)
     }
     else if (manifest->attempted == 0u && now >= 5000u && ready)
     {
-        /* Confirm only after this task has completed control cycles with Ethernet up. */
+        /* 以太网就绪且控制周期正常执行后，才确认当前固件。 */
         if (ota_mark(&manifest->confirmed))
         {
             dbg_ota_confirmed = 1u;

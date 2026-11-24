@@ -75,9 +75,9 @@ void EXTI9_5_IRQHandler(void)
 }
 
 /*
- * ע�⣺
- * USART1_IRQHandler �Ѿ��� bsp_uart.c ��ʵ�֡�
- * ���ﲻҪ��д USART1_IRQHandler��������ظ����塣
+ * 注意：
+ * USART1_IRQHandler 已经在 bsp_uart.c 里实现。
+ * 这里不要再写 USART1_IRQHandler，否则会重复定义。
  *
- * CAN ������ʱ��������������Ҳ��д CAN1/CAN2 RX �жϡ�
+ * CAN 接收暂时不做，所以这里也不写 CAN1/CAN2 RX 中断。
  */

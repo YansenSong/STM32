@@ -92,31 +92,18 @@ static void build_seb_7b9(uint8_t seb_mode, int16_t seb_value_raw, uint8_t flags
 
     if (estop != 0u)
     {
-        /*
-         * ¼±Í£ÖÆ¶¯£º
-         * Byte0 = 0x06£º¿ØÖÆÊ¹ÄÜ + Ñ¹Á¦Ä£Ê½
-         * Byte3 = Ñ¹Á¦Öµ£¬µ¥Î» 0.05MPa/bit
-         */
+        /* æ€¥åœæ—¶ä½¿ç”¨å‹åŠ›æ¨¡å¼ï¼ˆå­—èŠ‚ 0 ä¸º 0x06ï¼‰ï¼Œå­—èŠ‚ 3 ä¿å­˜æ€¥åœå‹åŠ›ï¼Œæ¯è®¡æ•°ä»£è¡¨ 0.05 MPaã€‚ */
         s_seb_tx[0] = 0x06u;
         s_seb_tx[3] = pressure_to_seb_signal(VEH_SEB_ESTOP_PRESSURE_MPA);
     }
     else if (((flags & VEH_FLAG_SEB_ALIGN) != 0u) || (seb_mode == VEH_SEB_MODE_ALIGNMENT))
     {
-        /*
-         * ¶ÔÖĞÄ£Ê½£º
-         * Byte0 bit0 = 1
-         */
+        /* å¯¹é½æ¨¡å¼åªç½®ä½å­—èŠ‚ 0 çš„æœ€ä½ä½ã€‚ */
         s_seb_tx[0] = 0x01u;
     }
     else if (((flags & VEH_FLAG_SEB_AUTOBRAKE) != 0u) || (seb_mode == VEH_SEB_MODE_AUTOBRAKE))
     {
-        /*
-         * ×Ô¶¯É²³µÄ£Ê½£º
-         * Byte0 = 0x0E£º¿ØÖÆÊ¹ÄÜ + Ñ¹Á¦Ä£Ê½ + ×Ô¶¯É²³µ
-         * Byte3 = Ñ¹Á¦Öµ£¬µ¥Î» 0.05MPa/bit
-         *
-         * seb_value_raw µ¥Î»£ºMPa * 100
-         */
+        /* è‡ªåŠ¨åˆ¶åŠ¨æ¨¡å¼ä½¿ç”¨ 0x0Eï¼Œå‹åŠ›å†™å…¥å­—èŠ‚ 3ã€‚ */
         float pressure_mpa = (float)seb_value_raw / 100.0f;
 
         s_seb_tx[0] = 0x0Eu;
@@ -124,17 +111,8 @@ static void build_seb_7b9(uint8_t seb_mode, int16_t seb_value_raw, uint8_t flags
     }
     else if (seb_mode == VEH_SEB_MODE_PRESSURE)
     {
-        /*
-         * Ñ¹Á¦Ä£Ê½£º
-         * Byte0 = 0x06£º¿ØÖÆÊ¹ÄÜ + Ñ¹Á¦Ä£Ê½
-         * Byte3 = Ñ¹Á¦Öµ£¬8Î»£¬µ¥Î» 0.05MPa/bit
-         *
-         * ÀıÈç£º
-         * 0.2MPa -> seb_value_raw = 20  -> Byte3 = 0x04
-         * 0.5MPa -> seb_value_raw = 50  -> Byte3 = 0x0A
-         * 1.0MPa -> seb_value_raw = 100 -> Byte3 = 0x14
-         * 2.0MPa -> seb_value_raw = 200 -> Byte3 = 0x28
-         */
+        /* å‹åŠ›æ¨¡å¼ä¸‹ï¼Œè¾“å…¥æ¯è®¡æ•°ä»£è¡¨ 0.01 MPaï¼Œå­—èŠ‚ 3 æ¯è®¡æ•°ä»£è¡¨ 0.05 MPaã€‚
+         * ä¾‹å¦‚è¾“å…¥ 50 è¡¨ç¤º 0.5 MPaï¼Œç¼–ç åå­—èŠ‚ 3 ä¸º 0x0Aã€‚ */
         float pressure_mpa = (float)seb_value_raw / 100.0f;
 
         s_seb_tx[0] = 0x06u;
@@ -142,17 +120,8 @@ static void build_seb_7b9(uint8_t seb_mode, int16_t seb_value_raw, uint8_t flags
     }
     else if (seb_mode == VEH_SEB_MODE_STROKE)
     {
-        /*
-         * ĞĞ³ÌÄ£Ê½£º
-         * Byte0 = 0x02£º¿ØÖÆÊ¹ÄÜ + ĞĞ³ÌÄ£Ê½
-         * Byte2~Byte3 = ĞĞ³ÌÇëÇóÖµ£¬16Î»
-         *
-         * seb_value_raw µ¥Î»£ºmm * 10
-         * ÀıÈç£º
-         * 10.0mm -> seb_value_raw = 100
-         *
-         * ĞĞ³Ì·Ö±æÂÊ£º0.05mm/bit
-         */
+        /* è¡Œç¨‹æ¨¡å¼ä¸‹ï¼Œè¾“å…¥æ¯è®¡æ•°ä»£è¡¨ 0.1 mmã€‚é™å¹…åæŒ‰ 0.05 mm ä¸ºå•ä½ç¼–ç ï¼Œ
+         * é«˜å­—èŠ‚å†™å…¥å­—èŠ‚ 2ï¼Œä½å­—èŠ‚å†™å…¥å­—èŠ‚ 3ã€‚ */
         float stroke_mm = (float)seb_value_raw / 10.0f;
         int16_t stroke_signal;
         uint16_t stroke_u16;
@@ -176,17 +145,11 @@ static void build_seb_7b9(uint8_t seb_mode, int16_t seb_value_raw, uint8_t flags
     }
     else
     {
-        /*
-         * ²»¿ØÖÆ SEB
-         */
+        /* å…¶ä½™æ¨¡å¼å°†å­—èŠ‚ 0 æ¸…é›¶ã€‚ */
         s_seb_tx[0] = 0x00u;
     }
 
-    /*
-     * µ±Ç°Êµ³µ²âÊÔÔİ²»Ê¹ÓÃÉúÃüĞÅºÅºÍĞ£Ñé¡£
-     * Byte6 = 0x00
-     * Byte7 = 0x00
-     */
+    /* å½“å‰å®ç°å°†å­—èŠ‚ 6 å’Œå­—èŠ‚ 7 ä¿æŒä¸ºé›¶ã€‚ */
     s_seb_tx[6] = 0x00u;
     s_seb_tx[7] = 0x00u;
 }

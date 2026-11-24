@@ -70,13 +70,13 @@ int main(void)
     BSP_CAN_RX_Init();
 
     dbg_boot_step = 8;
-    /* APB1 prescaler is 1, so TIM2 runs at PCLK1. */
+    /* APB1 的预分频系数为 1，TIM2 的输入时钟等于 PCLK1。 */
     __HAL_RCC_TIM2_CLK_ENABLE();
     TIM2->PSC = HAL_RCC_GetPCLK1Freq() / 1000000u - 1u;
     TIM2->ARR = UINT32_MAX;
     TIM2->EGR = TIM_EGR_UG;
     TIM2->CR1 = TIM_CR1_CEN;
-    /* Create all application tasks before starting the scheduler. */
+    /* 先创建三个应用任务，再启动调度器。 */
     Vehicle_CreateTask();
     Health_CreateTask();
     OtaUpdate_CreateTask();
@@ -187,7 +187,7 @@ static void SystemClock_Config(void)
     RCC_ClkInitTypeDef RCC_ClkInitStruct;
     RCC_OscInitTypeDef RCC_OscInitStruct;
 
-    /* Use the internal 16 MHz HSI oscillator as the system clock. */
+    /* 使用内部 16 MHz 高速振荡器（HSI）作为系统时钟。 */
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
     RCC_OscInitStruct.HSIState = RCC_HSI_ON;
     RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;

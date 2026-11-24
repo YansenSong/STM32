@@ -147,7 +147,7 @@ static uint8_t handle(const UpdatePacket *packet)
         if (s_finished) return OTA_OK;
         if (image_crc((const uint8_t *)s_base, s_length) != read_le32(s_manifest + 12))
             return OTA_BAD_IMAGE;
-        /* Publish the magic last. The signed bootloader authenticates before execution. */
+        /* 最后写入魔数，标记元数据已写完。启用签名验证的引导程序会在运行固件前验签。 */
         if (!program(s_meta + 4u, s_manifest + 4u, sizeof(s_manifest) - 4u) ||
             !program(s_meta, s_manifest, 4u))
             return OTA_FLASH_ERROR;
@@ -185,7 +185,7 @@ static void UpdateTask(void *argument)
         }
         if (xQueueReceive(s_rx, &packet, pdMS_TO_TICKS(OTA_TIMEOUT_MS)) != pdPASS)
         {
-            /* Reboot to clear maintenance and any buffered controls. */
+            /* 超时后复位，退出维护模式并清除缓存的控制指令。 */
             NVIC_SystemReset();
         }
         uint8_t response[12] = { 'O','T','A','1', packet.bytes[4], 0, 0, 0 };

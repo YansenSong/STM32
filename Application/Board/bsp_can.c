@@ -65,7 +65,7 @@ static uint8_t can_leave_init(CAN_TypeDef *CANx)
 static void can_set_btr(CAN_TypeDef *CANx, uint16_t prescaler)
 {
     /*
-     * HSIµ˜ ‘∞Ê£∫
+     * HSIË∞ÉËØïÁâàÔºö
      * APB1 = 16MHz
      * Tq = 1 + BS1(13) + BS2(2) = 16
      *
@@ -87,9 +87,9 @@ static void can_set_btr(CAN_TypeDef *CANx, uint16_t prescaler)
 static void can_config_common(CAN_TypeDef *CANx)
 {
     /*
-     * ±£≥÷ INRQ=1£¨≤ª“™Ã·«∞ÕÀ≥ˆ≥ı ºªØƒ£ Ω°£
-     * ABOM: ◊‘∂Ø¿Îœﬂª÷∏¥
-     * NART: Ω˚÷π◊‘∂Ø÷ÿ∑¢£¨µ˜ ‘Ω◊∂Œ±‹√‚Œﬁ ACK  ±” œ‰“ª÷±’º”√
+     * ‰øùÊåÅ INRQ=1Ôºå‰∏çË¶ÅÊèêÂâçÈÄÄÂá∫ÂàùÂßãÂåñÊ®°Âºè„ÄÇ
+     * ABOM: Ëá™Âä®Á¶ªÁ∫øÊÅ¢Â§ç
+     * NART: Á¶ÅÊ≠¢Ëá™Âä®ÈáçÂèëÔºåË∞ÉËØïÈò∂ÊÆµÈÅøÂÖçÊó† ACK Êó∂ÈÇÆÁÆ±‰∏ÄÁõ¥Âç†Áî®
      */
     CANx->MCR |= CAN_MCR_INRQ | CAN_MCR_ABOM | CAN_MCR_NART;
 
@@ -162,7 +162,7 @@ uint8_t BSP_CAN2_Init_DriveBrake(void)
     __HAL_RCC_GPIOB_CLK_ENABLE();
 
     /*
-     * CAN2 “¿¿µ CAN1  ±÷”°£
+     * CAN2 ‰æùËµñ CAN1 Êó∂Èíü„ÄÇ
      */
     __HAL_RCC_CAN1_CLK_ENABLE();
     __HAL_RCC_CAN2_CLK_ENABLE();

@@ -27,7 +27,7 @@
 #define INCLUDE_uxTaskGetStackHighWaterMark     1
 
 #define configKERNEL_INTERRUPT_PRIORITY         (15u << (8u - __NVIC_PRIO_BITS))
-/* USART interrupts stay above this threshold and do not call the kernel. */
+/* USART 中断的优先级高于此阈值，中断处理函数不调用内核 API。 */
 #define configMAX_SYSCALL_INTERRUPT_PRIORITY    (5u << (8u - __NVIC_PRIO_BITS))
 #define vPortSVCHandler                         SVC_Handler
 #define xPortPendSVHandler                      PendSV_Handler

@@ -91,7 +91,7 @@ void Health_SendPending(void)
         xQueuePeek(s_reports, &report, 0u) == pdPASS &&
         BSP_ETH_SendTelemetry(report.bytes, sizeof(report.bytes), HEALTH_UDP_PORT))
     {
-        /* Vehicle has higher priority than the sole producer, Health. */
+        /* 只有 Health 会写入此队列。Vehicle 的优先级更高，因此发送期间 Health 无法抢占它并覆盖报告。 */
         (void)xQueueReceive(s_reports, &report, 0u);
     }
 }
