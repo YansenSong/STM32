@@ -96,8 +96,7 @@ void VehicleFeedback_OnCAN(uint8_t bus, uint16_t id, const uint8_t *data,
          * so high byte1 / low byte2. Intel314 starts at bit8, low byte1/high2.
          * This matches the existing 0x314 TX byte positions; TX is unchanged. */
         s_fb.eps_mode = (uint8_t)(data[0] & 1u);
-        /* Compatibility storage: raw signed CAN count *10000, not road-wheel degrees.
-         * User-confirmed count/10 transform is applied in the status snapshot. */
+        /* Store signed EPS degrees (1 deg/count) scaled by 10000. */
         s_fb.eps_angle_x10000 = (int32_t)fb_i16(fb_eps_u16(&data[1])) * 10000;
         s_fb.eps_current_deci_a = fb_eps_u16(&data[3]);
         s_fb.eps_temperature_raw = data[6];
@@ -264,7 +263,7 @@ void VehicleFeedback_FillStatus(VehicleStatus_t *status, uint32_t now)
         }
 #if VEH_FEEDBACK_STEER_CALIBRATED || VEH_FEEDBACK_USE_LEGACY_STANDARD
         scaled = (float)s_fb.eps_angle_x10000 *
-             VEH_FEEDBACK_WHEEL_PER_EPS_DEG + VEH_FEEDBACK_WHEEL_OFFSET_DEG * 10000.0f;
+             VEH_STEERING_WHEEL_PER_EPS_DEG + VEH_STEERING_WHEEL_OFFSET_DEG * 10000.0f;
         if ((scaled >= -2147483648.0f) && (scaled <= 2147483520.0f))
         {
             status->actual_steering_x10000 = (int32_t)scaled;

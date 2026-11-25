@@ -137,14 +137,7 @@
 #define VEH_CAN_RX_MAX_PER_BUS          4u
 #define VEH_STA_ERROR_TIMEOUT_MS        500u
 
-/* TODO real vehicle calibration. The old TX 3000.0f is NOT a measured ratio.
- * Enable only after measurement/vehicle parameters confirm these transforms.
- * These independent RX settings do not change existing control commands.
- */
-/* User requested the CURRENT compiled legacy convention:
- * measured RPM / current TX RPM-per-m/s; EPS measured count / 10.
- * This enables a provisional legacy mapping, NOT a physical calibration claim.
- * Keep separate CALIBRATED flags for future confirmed vehicle calibration. */
+/* Keep the legacy speed mapping until the drivetrain is calibrated. */
 #define VEH_FEEDBACK_USE_LEGACY_STANDARD 1u
 #define VEH_FEEDBACK_SPEED_CALIBRATED   0u
 /* 0 unconfigured, 1 measured RPM/(m/s), 2 wheel geometry.
@@ -156,10 +149,10 @@
 #define VEH_FEEDBACK_GEAR_RATIO         0.0f
 #define VEH_FEEDBACK_RPM_PER_MPS        VEH_RT49_RPM_PER_MPS
 #define VEH_FEEDBACK_SPEED_SIGN         1
-#define VEH_FEEDBACK_STEER_CALIBRATED   0u
-/* User measured CAN count300 -> real angle30deg: feedback scale0.1. */
-#define VEH_FEEDBACK_WHEEL_PER_EPS_DEG  0.1f
-#define VEH_FEEDBACK_WHEEL_OFFSET_DEG   0.0f
+#define VEH_FEEDBACK_STEER_CALIBRATED   1u
+/* Bench-verified mapping shared by the command and feedback paths. */
+#define VEH_STEERING_WHEEL_PER_EPS_DEG  0.1f
+#define VEH_STEERING_WHEEL_OFFSET_DEG   0.0f
 
 #if (VEH_EPS_RX_INTEL > 1u)
 #error EPS feedback byte order must be 0 (Motorola314) or 1 (Intel314)

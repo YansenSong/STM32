@@ -83,7 +83,7 @@ Bootloader 检查向量、镜像范围和 CRC32 后启动 B 一次。B 在运行
 - `remote_control.c`：遥控接管。
 - `vehicle_control.c` / `vehicle_status.c`：车辆控制与状态回传。
 
-当前入口使用 HSI 16MHz；CAN 时序以 `bsp_can.c` 实现为准，配置头中的旧 42MHz 注释尚未同步。
+系统优先使用板载 8 MHz HSE 经 PLL 供时，HCLK 和 APB1 保持 16 MHz。HSE 或 PLL 启动失败时回退至 16 MHz HSI。CAN 位时序见 `bsp_can.c`。
 
 ## 调试脚本
 
@@ -94,6 +94,8 @@ Vehicle 统一发送 UDP，链路恢复后发送最新报告。UDP 5001 的状�
 
 在项目根目录运行 `python3 tools/udp_send_cmd_test.py` 或 `python3 tools/udp_status_test.py`。
 运行前检查脚本内的 IP 和端口；发送脚本含车辆动作指令，需在具备调试条件时手动执行。
+台架上可用 `python3 tools/udp_keyboard_control.py` 打开方向键控制窗口。
+角度换算、CAN1 时序对照及实测结果见 [CAN1 转角反馈排障记录](docs/CAN1转角反馈排障记录.md)。
 
 ## 本次整理
 

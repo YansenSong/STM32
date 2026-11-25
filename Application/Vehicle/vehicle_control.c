@@ -187,7 +187,9 @@ uint8_t Vehicle_ParseCmd26(const uint8_t *buf, uint16_t len)
     cmd.flags         = buf[VEH_CMD_FLAGS];
     cmd.enable_mask   = buf[VEH_CMD_ENABLE];
     cmd.v_mps         = (float)read_i32_be(&buf[VEH_CMD_V_RAW]) / 10000.0f;
-    cmd.eps_deg       = (float)read_i32_be(&buf[VEH_CMD_EPS_RAW]) / 10000.0f;
+    /* The upper-computer command carries road-wheel degrees x 10000. */
+    cmd.eps_deg       = ((float)read_i32_be(&buf[VEH_CMD_EPS_RAW]) / 10000.0f -
+                        VEH_STEERING_WHEEL_OFFSET_DEG) / VEH_STEERING_WHEEL_PER_EPS_DEG;
     cmd.seb_mode      = buf[VEH_CMD_SEB_MODE];
     cmd.seb_value_raw = read_i16_be(&buf[VEH_CMD_SEB_VALUE]);
     cmd.light         = buf[VEH_CMD_LIGHT];

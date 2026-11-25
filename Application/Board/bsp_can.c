@@ -65,7 +65,6 @@ static uint8_t can_leave_init(CAN_TypeDef *CANx)
 static void can_set_btr(CAN_TypeDef *CANx, uint16_t prescaler)
 {
     /*
-     * HSI调试版：
      * APB1 = 16MHz
      * Tq = 1 + BS1(13) + BS2(2) = 16
      *

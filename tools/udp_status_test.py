@@ -52,7 +52,7 @@ def parse_status(frame):
         "legacy_speed_mapping": bool(faults & 0x80000),
         "legacy_eps_angle_mapping": bool(faults & 0x100000),
         "eps_actual_angle_count": struct.unpack_from(">i", frame, 30)[0] if valid & 8 else "INVALID",
-        "eps_actual_angle_deg": struct.unpack_from(">i", frame, 30)[0] / 10.0 if valid & 8 else "INVALID",
+        "eps_actual_angle_deg": float(struct.unpack_from(">i", frame, 30)[0]) if valid & 8 else "INVALID",
         "brake_mode": brake_mode,
         "brake_actual": brake_raw if valid & 16 else "INVALID",
         "brake_pressure_mpa": brake_raw / 100.0 if (valid & 16 and brake_mode == 1) else "INVALID",

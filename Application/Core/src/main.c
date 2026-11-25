@@ -184,30 +184,27 @@ void vApplicationStackOverflowHook(TaskHandle_t task, char *name)
 
 static void SystemClock_Config(void)
 {
-    RCC_ClkInitTypeDef RCC_ClkInitStruct;
-    RCC_OscInitTypeDef RCC_OscInitStruct;
+    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
 
-    /* 使用内部 16 MHz 高速振荡器（HSI）作为系统时钟。 */
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-    RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-    RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_OFF;
-
-    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-    {
-        dbg_boot_step = 200;
-        while (1)
-        {
-        }
-    }
+    /* 8 MHz HSE -> 256 MHz PLL VCO -> 32 MHz SYSCLK -> 16 MHz HCLK. */
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLM = 8u;
+    RCC_OscInitStruct.PLL.PLLN = 256u;
+    RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV8;
+    RCC_OscInitStruct.PLL.PLLQ = 6u;
+    HAL_StatusTypeDef crystal_status = HAL_RCC_OscConfig(&RCC_OscInitStruct);
 
     RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK |
                                   RCC_CLOCKTYPE_HCLK   |
                                   RCC_CLOCKTYPE_PCLK1  |
                                   RCC_CLOCKTYPE_PCLK2;
 
-    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
-    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.SYSCLKSource = crystal_status == HAL_OK ? RCC_SYSCLKSOURCE_PLLCLK : RCC_SYSCLKSOURCE_HSI;
+    RCC_ClkInitStruct.AHBCLKDivider = crystal_status == HAL_OK ? RCC_SYSCLK_DIV2 : RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 

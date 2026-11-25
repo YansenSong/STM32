@@ -8,6 +8,8 @@ See README_STA56 and STA56 interface document for current feedback.
 - 默认 UDP 端口：5000
 - 上位机/路径规划程序把原来的 26 字节 cmd__ 报文直接作为 UDP payload 发送即可。
 - UDP payload 可以正好 26 字节，也可以包含填充，STM32 会扫描其中的 cmd__ 帧。
+- UDP 和 USART1 指令的 Param2 采用车轮转角 × 10000。固件按车轮 1° 对应 EPS 10° 换算，例如 Param2=30000 对应车轮 3°、EPS 30°。
+- 从旧固件迁移时，原先按 EPS 角度填写 Param2 的客户端应将旧值除以 10，以保持相同的实际转向幅度。
 
 2. 优先级
 - USART1：保留原 RK3588/PC 串口 26 字节控制。
@@ -41,3 +43,10 @@ See README_STA56 and STA56 interface document for current feedback.
 - Keil 下载程序后查看 dbg_eth_ready 是否为 1。
 - PC 先 ping 192.168.5.50，如果 ARP 正常，dbg_eth_arp_req_cnt/dbg_eth_arp_reply_cnt 会增加。
 - 用 udp_send_cmd_test.py 发 26 字节命令，看 dbg_eth_cmd_ok_cnt 是否增加，再看 CAN 分析仪。
+
+7. 方向键台架控制
+- 在有桌面环境的电脑运行 python3 tools/udp_keyboard_control.py，需要 Python tkinter。
+- 控制窗口获得焦点时，按住 ↑ / ↓ 控制前进或后退（±0.2 m/s），按住 ← / → 控制车轮目标角（±3°）。
+- 可同时按一个速度键和一个转向键。同轴两个方向键同时按住时，该轴目标归零。
+- 松开某一轴的按键后该轴目标归零。松开所有按键、窗口失焦或按 Esc 退出时，程序尝试持续发送约 1 秒的零速及回正指令。
+- 窗口显示的是发送目标，实际速度和角度可用 udp_status_test.py 查看。程序退出不代表车辆已完成回正。
